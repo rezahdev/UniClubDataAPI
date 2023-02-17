@@ -8,9 +8,30 @@ namespace UniClubDataAPI.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        public string Name { get; set; }
-        public DateTime CreatedDate { get; set; }
 
-        public DateTime UpdatedDate { get; set; }
+        [Required]
+        [MaxLength(255)]
+        public string Name { get; set; }
+
+        [Required]
+        public int UniversityId { get; set; }
+
+        [EmailAddress]
+        public string Email { get; set; }
+
+        [MaxLength(1000)]
+        public string Description { get; set; }
+
+        public string LogoUrl { get; set; }
+
+        public string WebsiteUrl { get; set; }
+
+        public string InstagramUrl { get; set; }
+
+        public string FacebookUrl { get; set; }
+
+        public string TwitterUrl { get; set; }
+
+        public DateTime CreatedDate { get; set; }
     }
 }

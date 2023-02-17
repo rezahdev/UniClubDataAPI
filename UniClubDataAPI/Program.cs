@@ -8,9 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 Log.Logger = new LoggerConfiguration().MinimumLevel.Debug().WriteTo.
     File("log/errorLog.txt", rollingInterval: RollingInterval.Day).CreateLogger();
 
-builder.Services.AddDbContext<ApplicationDBContext>(option => {
-    option.UseMySQL("")
-})
+builder.Services.AddDbContext<ApplicationDBContext>(option =>
+{
+    option.UseMySQL(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
+});
 
 builder.Services.AddControllers(options => { 
     options.ReturnHttpNotAcceptable = true;

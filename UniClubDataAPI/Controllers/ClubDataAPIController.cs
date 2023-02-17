@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using UniClubDataAPI.Data;
 using UniClubDataAPI.Models;
-using UniClubDataAPI.Models.Dto;
 
 namespace UniClubDataAPI.Controllers
 {
@@ -12,62 +11,64 @@ namespace UniClubDataAPI.Controllers
     public class ClubDataAPIController: ControllerBase
     {
         private readonly ILogger _logger;
+        private readonly ApplicationDBContext _db;
 
-        public ClubDataAPIController(ILogger<ClubDataAPIController> logger)
+        public ClubDataAPIController(ILogger<ClubDataAPIController> logger, ApplicationDBContext db)
         {
             _logger = logger;
+            _db = db;
         }
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<ClubDTO>> GetClubs()
+        public ActionResult<IEnumerable<Club>> GetClubs()
         {
             _logger.LogInformation("Updating");
-            return Ok(ClubData.ClubList);
+            return Ok(_db.Clubs.ToList());
         }
 
         [HttpGet("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<ClubDTO> GetClub(int id)
+        public ActionResult<Club> GetClub(int id)
         {
             if(id == 0)
             {
                 return BadRequest("Invalid Id");
             }
-            ClubDTO club = ClubData.ClubList.Find(c => c.Id == id);
+            Club club = _db.Clubs.Find(id);
             return club == null ? NotFound() : Ok(club);
         }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<ClubDTO> CreateClub([FromBody]ClubDTO club)
+        public ActionResult<Club> CreateClub([FromBody]Club club)
         {
             if(club == null)
             {
                 return BadRequest();
             }
 
-            if(ClubData.ClubList.FirstOrDefault(c => c.Name.ToLower() == club.Name.ToLower()) != null)
+            if(_db.Clubs.FirstOrDefault(c => c.Name.ToLower() == club.Name.ToLower()) != null)
             {
                 ModelState.AddModelError("Unique", "name is not unique.");
                 return BadRequest(ModelState);
             }
 
-            club.Id = ClubData.ClubList.OrderByDescending(c => c.Id).First().Id + 1;
-            ClubData.ClubList.Add(club);
+            _db.Clubs.Add(club);
+            _db.SaveChanges();
 
             return Ok(club);
         }
 
-        [HttpDelete("{id:int")]
+        [HttpDelete("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult DeleteClub(int id)
         {
-            ClubDTO club = ClubData.ClubList.Find(c => c.Id == id);
+            Club club = _db.Clubs.Find(id);
 
             if(club == null)
             {
@@ -75,45 +76,47 @@ namespace UniClubDataAPI.Controllers
             }
             else
             {
-                ClubData.ClubList.Remove(club);
+                _db.Clubs.Remove(club);
+                _db.SaveChanges();
                 return NoContent();
             }
         }
 
-        [HttpPut("{id:int")]
+        [HttpPut("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<ClubDTO> UpdateClub(int id, [FromBody]ClubDTO newClubData)
+        public ActionResult<Club> UpdateClub(int id, [FromBody]Club newClubData)
         {
             if(newClubData == null || newClubData.Id != id)
             {
                 return BadRequest();
             }
 
-            ClubDTO club = ClubData.ClubList.Find(c => c.Id == id);
+            Club club = _db.Clubs.Find(id);
 
             if(club == null)
             {
                 return NotFound();
             }
 
-            club.Name = newClubData.Name;
+            _db.Clubs.Update(club);
+            _db.SaveChanges();
             return Ok(club);
         }
 
-        [HttpPatch("{id:int")]
+        [HttpPatch("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<ClubDTO> UpdatePartialClub(int id, JsonPatchDocument<ClubDTO> newClubData)
+        public ActionResult<Club> UpdatePartialClub(int id, JsonPatchDocument<Club> newClubData)
         {
             if (newClubData == null)
             {
                 return BadRequest();
             }
 
-            ClubDTO club = ClubData.ClubList.Find(c => c.Id == id);
+            Club club = _db.Clubs.Find(id);
 
             if (club == null)
             {
@@ -126,7 +129,12 @@ namespace UniClubDataAPI.Controllers
             {
                 return BadRequest();
             }
+
+            _db.Clubs.Update(club);
+            _db.SaveChanges();
+
             return Ok(club);
         }
+
     }
 }
