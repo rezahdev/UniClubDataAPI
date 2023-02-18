@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UniClubDataAPI.Data;
 
@@ -10,9 +11,11 @@ using UniClubDataAPI.Data;
 namespace UniClubDataAPI.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20230218161945_CreateUserTable")]
+    partial class CreateUserTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -70,17 +73,17 @@ namespace UniClubDataAPI.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedDate = new DateTime(2023, 2, 18, 10, 49, 10, 41, DateTimeKind.Local).AddTicks(7842),
+                            CreatedDate = new DateTime(2023, 2, 18, 10, 19, 44, 878, DateTimeKind.Local).AddTicks(1714),
                             Description = "Test description",
                             Email = "asd@asd.com",
-                            FacebookUrl = "facebook.com",
-                            InstagramUrl = "instagram.com",
-                            LogoUrl = "logo.jpg",
+                            FacebookUrl = "khkjh",
+                            InstagramUrl = "kjhkjh",
+                            LogoUrl = "jgjhg",
                             Name = "Test Club",
-                            TwitterUrl = "twitter.com",
+                            TwitterUrl = "kjhkj",
                             UniversityId = 1,
-                            UpdatedDate = new DateTime(2023, 2, 18, 10, 49, 10, 41, DateTimeKind.Local).AddTicks(7878),
-                            WebsiteUrl = "test.com"
+                            UpdatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            WebsiteUrl = "jhghj"
                         });
                 });
 
@@ -109,16 +112,6 @@ namespace UniClubDataAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            AccessLevel = 1,
-                            Email = "test@email.com",
-                            Name = "Test User",
-                            Password = "abc"
-                        });
                 });
 #pragma warning restore 612, 618
         }

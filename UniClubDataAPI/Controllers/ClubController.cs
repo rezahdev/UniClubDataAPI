@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.JsonPatch;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UniClubDataAPI.Data;
@@ -7,9 +8,9 @@ using UniClubDataAPI.Models.Dto;
 
 namespace UniClubDataAPI.Controllers
 {
-    [Route("api/clubs")]
+    [Route("clubs")]
     [ApiController]
-    public class ClubDataAPIController: ControllerBase
+    public class ClubController: ControllerBase
     {
         private readonly ApplicationDBContext _db;
 
@@ -20,7 +21,7 @@ namespace UniClubDataAPI.Controllers
             public const string NoContent = "Request successful";
         }
 
-        public ClubDataAPIController(ApplicationDBContext db)
+        public ClubController(ApplicationDBContext db)
         {
             _db = db;
         }
@@ -54,9 +55,11 @@ namespace UniClubDataAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> CreateClubAsync([FromBody]ClubDTO clubDTO)
         {
             if(clubDTO == null)
@@ -74,8 +77,10 @@ namespace UniClubDataAPI.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteClubAsync(int id)
         {
@@ -93,9 +98,11 @@ namespace UniClubDataAPI.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ClubDTO>> UpdateClubAsync(int id, [FromBody]ClubDTO clubDTO)
         {
             if(clubDTO == null)
@@ -119,9 +126,11 @@ namespace UniClubDataAPI.Controllers
         }
 
         [HttpPatch("{id:int}")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ClubDTO>> UpdatePartialClub(int id, JsonPatchDocument<ClubDTO> clubDTOP)
         {
             if (clubDTOP == null)
