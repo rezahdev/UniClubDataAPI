@@ -1,140 +1,155 @@
 ﻿using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using UniClubDataAPI.Data;
 using UniClubDataAPI.Models;
+using UniClubDataAPI.Models.Dto;
 
 namespace UniClubDataAPI.Controllers
 {
-    //[Route("api/[controller]")]
-    [Route("api/ClubDataAPI")]
+    [Route("api/clubs")]
     [ApiController]
     public class ClubDataAPIController: ControllerBase
     {
-        private readonly ILogger _logger;
         private readonly ApplicationDBContext _db;
 
-        public ClubDataAPIController(ILogger<ClubDataAPIController> logger, ApplicationDBContext db)
+        private struct _errorMessage
         {
-            _logger = logger;
+            public const string NotFound = "Club not found (club Id may be invalid)";
+            public const string BadRequest = "Invalid request (request parameters may be invalid)";
+            public const string NoContent = "Request successful";
+        }
+
+        public ClubDataAPIController(ApplicationDBContext db)
+        {
             _db = db;
         }
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<Club>> GetClubs()
+        public async Task<ActionResult<IEnumerable<ClubDTO>>> GetClubsAsync()
         {
-            _logger.LogInformation("Updating");
-            return Ok(_db.Clubs.ToList());
+            List<ClubDTO> clubList = await _db.Clubs.Select(c => new ClubDTO(c)).ToListAsync();
+            return Ok(clubList);
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("{id:int}", Name = "GetClub")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<Club> GetClub(int id)
+        public async Task<ActionResult<ClubDTO>> GetClubAsync(int id)
         {
             if(id == 0)
             {
-                return BadRequest("Invalid Id");
+                return BadRequest(_errorMessage.BadRequest);
             }
-            Club club = _db.Clubs.Find(id);
-            return club == null ? NotFound() : Ok(club);
+
+            Club club = await _db.Clubs.FirstOrDefaultAsync(c => c.Id == id);
+
+            if(club == null)
+            {
+                return NotFound(_errorMessage.NotFound);
+            }
+            return Ok(new ClubDTO(club));
         }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<Club> CreateClub([FromBody]Club club)
+        public async Task<IActionResult> CreateClubAsync([FromBody]ClubDTO clubDTO)
         {
-            if(club == null)
+            if(clubDTO == null)
             {
-                return BadRequest();
+                return BadRequest(_errorMessage.BadRequest);
             }
 
-            if(_db.Clubs.FirstOrDefault(c => c.Name.ToLower() == club.Name.ToLower()) != null)
-            {
-                ModelState.AddModelError("Unique", "name is not unique.");
-                return BadRequest(ModelState);
-            }
+            Club club = await clubDTO.GetClubFromDTOAsync();
+            club.CreatedDate = DateTime.Now;
 
-            _db.Clubs.Add(club);
-            _db.SaveChanges();
+            await _db.Clubs.AddAsync(club);
+            await _db.SaveChangesAsync();
 
-            return Ok(club);
+            return CreatedAtRoute("GetClub", new { id = club.Id }, clubDTO);
         }
 
         [HttpDelete("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult DeleteClub(int id)
+        public async Task<IActionResult> DeleteClubAsync(int id)
         {
-            Club club = _db.Clubs.Find(id);
+            Club club = await _db.Clubs.FindAsync(id);
 
             if(club == null)
             {
-                return BadRequest();
+                return NotFound(_errorMessage.NotFound);
             }
-            else
-            {
-                _db.Clubs.Remove(club);
-                _db.SaveChanges();
-                return NoContent();
-            }
+
+            _db.Clubs.Remove(club);
+            await _db.SaveChangesAsync();
+
+            return NoContent();
         }
 
         [HttpPut("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<Club> UpdateClub(int id, [FromBody]Club newClubData)
+        public async Task<ActionResult<ClubDTO>> UpdateClubAsync(int id, [FromBody]ClubDTO clubDTO)
         {
-            if(newClubData == null || newClubData.Id != id)
+            if(clubDTO == null)
             {
-                return BadRequest();
+                return BadRequest(_errorMessage.BadRequest);
             }
 
-            Club club = _db.Clubs.Find(id);
-
-            if(club == null)
+            bool clubExists = await _db.Clubs.AnyAsync(c => c.Id == id);
+            if (!clubExists)
             {
-                return NotFound();
+                return NotFound(_errorMessage.NotFound);
             }
+
+            clubDTO.Id = id;
+            Club club = await clubDTO.GetClubFromDTOAsync();
 
             _db.Clubs.Update(club);
-            _db.SaveChanges();
-            return Ok(club);
+            await _db.SaveChangesAsync();
+
+            return Ok(clubDTO);
         }
 
         [HttpPatch("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<Club> UpdatePartialClub(int id, JsonPatchDocument<Club> newClubData)
+        public async Task<ActionResult<ClubDTO>> UpdatePartialClub(int id, JsonPatchDocument<ClubDTO> clubDTOP)
         {
-            if (newClubData == null)
+            if (clubDTOP == null)
             {
-                return BadRequest();
+                return BadRequest(_errorMessage.BadRequest);
             }
 
-            Club club = _db.Clubs.Find(id);
+            Club currentClub = await _db.Clubs.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
 
-            if (club == null)
+            if (currentClub == null)
             {
-                return NotFound();
+                return NotFound(_errorMessage.NotFound);
             }
 
-            newClubData.ApplyTo(club, ModelState);
+            ClubDTO currentClubDTO = new ClubDTO(currentClub);
+            clubDTOP.ApplyTo(currentClubDTO, ModelState);
 
             if(!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(_errorMessage.BadRequest);
             }
 
+            Club club = await currentClubDTO.GetClubFromDTOAsync();
+
             _db.Clubs.Update(club);
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
 
-            return Ok(club);
+            return Ok(currentClubDTO);
         }
-
     }
 }

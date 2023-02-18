@@ -14,7 +14,7 @@ namespace UniClubDataAPI.Migrations
             migrationBuilder.InsertData(
                 table: "Clubs",
                 columns: new[] { "Id", "CreatedDate", "Description", "Email", "FacebookUrl", "InstagramUrl", "LogoUrl", "Name", "TwitterUrl", "UniversityId", "UpdatedDate", "WebsiteUrl" },
-                values: new object[] { 1, new DateTime(2023, 2, 16, 22, 0, 2, 249, DateTimeKind.Local).AddTicks(1778), "Test description", "asd@asd.com", "khkjh", "kjhkjh", "jgjhg", "Test Club", "kjhkj", 1, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "jhghj" });
+                values: new object[] { 1, new DateTime(2023, 2, 16, 22, 0, 2, 249, DateTimeKind.Local).AddTicks(1778), "Test description", "asd@asd.com", "facebook.com", "instagram.com", "logo.jpg", "Test Club", "twitter.com", 1, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "test.com" });
         }
 
         /// <inheritdoc />

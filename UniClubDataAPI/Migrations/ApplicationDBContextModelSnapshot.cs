@@ -79,14 +79,14 @@ namespace UniClubDataAPI.Migrations
                             CreatedDate = new DateTime(2023, 2, 16, 22, 0, 2, 249, DateTimeKind.Local).AddTicks(1778),
                             Description = "Test description",
                             Email = "asd@asd.com",
-                            FacebookUrl = "khkjh",
-                            InstagramUrl = "kjhkjh",
-                            LogoUrl = "jgjhg",
+                            FacebookUrl = "facebook.com",
+                            InstagramUrl = "instagram.com",
+                            LogoUrl = "logo.jpg",
                             Name = "Test Club",
-                            TwitterUrl = "kjhkj",
+                            TwitterUrl = "twitter.com",
                             UniversityId = 1,
                             UpdatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            WebsiteUrl = "jhghj"
+                            WebsiteUrl = "test.com"
                         });
                 });
 #pragma warning restore 612, 618

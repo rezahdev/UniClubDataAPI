@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using UniClubDataAPI.Validations;
 
 namespace UniClubDataAPI.Models
 {
@@ -11,6 +12,7 @@ namespace UniClubDataAPI.Models
 
         [Required]
         [MaxLength(255)]
+        [UniqueNameValidation("UniversityId")]
         public string Name { get; set; }
 
         [Required]
@@ -20,18 +22,20 @@ namespace UniClubDataAPI.Models
         public string Email { get; set; }
 
         [MaxLength(1000)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
-        public string LogoUrl { get; set; }
+        public string? LogoUrl { get; set; }
 
-        public string WebsiteUrl { get; set; }
+        public string? WebsiteUrl { get; set; }
 
-        public string InstagramUrl { get; set; }
+        public string? InstagramUrl { get; set; }
 
-        public string FacebookUrl { get; set; }
+        public string? FacebookUrl { get; set; }
 
-        public string TwitterUrl { get; set; }
+        public string? TwitterUrl { get; set; }
 
         public DateTime CreatedDate { get; set; }
+
+        public DateTime UpdatedDate { get; set; }
     }
 }

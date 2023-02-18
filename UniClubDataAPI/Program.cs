@@ -2,22 +2,24 @@ using Serilog;
 using UniClubDataAPI.Data;
 using Microsoft.EntityFrameworkCore;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
+
 // Add services to the container.
-Log.Logger = new LoggerConfiguration().MinimumLevel.Debug().WriteTo.
+Log.Logger = new LoggerConfiguration().MinimumLevel.Warning().WriteTo.
     File("log/errorLog.txt", rollingInterval: RollingInterval.Day).CreateLogger();
 
-builder.Services.AddDbContext<ApplicationDBContext>(option =>
-{
+builder.Services.AddDbContext<ApplicationDBContext>(option => {
     option.UseMySQL(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
 });
 
-builder.Services.AddControllers(options => { 
-    options.ReturnHttpNotAcceptable = true;
+builder.Services.AddControllers(option => { 
+    //option.ReturnHttpNotAcceptable = true;
 }).AddNewtonsoftJson();
 
 builder.Host.UseSerilog();
+
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
